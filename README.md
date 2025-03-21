@@ -48,7 +48,7 @@ comment
 To access the API from Node.js, install it by: `npm install git+ssh://github.com/tearflake/s-expr`, and include the following line in your code:
 
 ```
-const S-expr = require('@tearflake/s-expr');
+const Sexpr = require('@tearflake/s-expr');
 ```
 
 To access the API from browser, clone this repository from GitHub by: `git clone https://github.com/tearflake/s-expr`, and include the following line in your code:
@@ -60,7 +60,7 @@ To access the API from browser, clone this repository from GitHub by: `git clone
 Below, in both cases, use the package as:
 
 ```
-var arrOutput = S-expr.parse('(a b c)');
+var arrOutput = Sexpr.parse('(a b c)');
 if (!arrOutput.err) {
     console.log(JSON.stringify(arrOutput, null, 4));
 }
