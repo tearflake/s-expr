@@ -246,9 +246,13 @@ var Sexpr = (
                 if (numBounds1 === 1 || numBounds1 % 2 === 0) {
                     currAtom = bound;
                     pos1[x]++;
-                    while (m[pos1[y]][pos1[x]] !== undefined && (m[pos1[y]][pos1[x]] !== bound)) {
+                    var instr = false;
+                    while (m[pos1[y]][pos1[x]] !== undefined && ((m[pos1[y]][pos1[x]] !== bound) || instr)) {
                         currAtom += m[pos1[y]][pos1[x]];
                         pos1[x]++;
+                        if (bound === '/' && m[pos1[y]][pos1[x]] === '"') {
+                            instr = !instr;
+                        }
                         if (m[pos1[y]][pos1[x] - 1] === '\\' && bound ==='"') {
                             currAtom += m[pos1[y]][pos1[x]];
                             pos1[x]++;
@@ -262,7 +266,7 @@ var Sexpr = (
                                 val = JSON.parse(currAtom).replaceAll ("\\", "&bsol;");
                             }
                             catch {
-                                return {err: err[4], pos: {y: pos1[y], x: pos1[x]}};
+                                return {err: err[4], pos: {y: pos0[y], x: pos0[x]}};
                             }
                         }
                         else {
