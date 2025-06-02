@@ -50,7 +50,7 @@ sexpression usage examples
 To access the API from Node.js, install it by: `npm install git+ssh://github.com/tearflake/s-expr`, and include the following line in your code:
 
 ```
-const Sexpression = require('@tearflake/s-expr');
+const Sexpr = require('@tearflake/s-expr');
 ```
 
 To access the API from browser, clone this repository from GitHub: `git clone https://github.com/tearflake/s-expr`, and include the following line in your code:
