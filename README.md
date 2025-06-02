@@ -9,7 +9,7 @@ This package contains a version of S-expression parser written in Javascript. Be
 ```
 ///
 s-expr usage examples
-                       ///
+                  ///
 
 (
   atom
