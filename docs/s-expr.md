@@ -10,9 +10,8 @@
 
 - [1. introduction](#1-introduction)  
 - [2. informal definition](#2-informal-definition)  
-- [3. formal definition](#3-formal-definition)  
-- [4. strings and comments](#4-strings-and-comments)
-- [5. conclusion](#5-conclusion)  
+- [3. syntax extension](#3-syntax-extensions)  
+- [4. conclusion](#5-conclusion)  
 
 ## 1. introduction
 
@@ -33,20 +32,9 @@ Lists can be nested, allowing for the representation of complex hierarchical str
 
 This S-expression depicts equality between multiplication and square.
 
-## 3. formal definition
-
-S-expressions (Symbolic Expressions) are a fundamental concept in computer science and programming language theory. S-expressions are a simple, yet powerful notation for representing nested list data structures and code in a parenthesized form. They are commonly associated with the Lisp family of programming languages, where they serve both as a way to represent code and data uniformly.
-
-The general form of an S-expression is either:
-
-- An atom (e.g., `atom`), or
-- A list of S-expressions (e.g., `(expr1 expr2 expr3 ...)`).
-
-Lists can be nested, allowing for the representation of complex hierarchical structures.
-
 The whitespace between syntactic elements may be used to improve readability, and may be consisted of spaces, new lines, or any combination of them.
 
-## 4. strings and comments
+## 3. syntax extensions
 
 Although a great part of S-expressions power lies in its simplicity, let's introduce a few syntax extensions in a hope of making expressed code more readable, namely: strings and comments.
 
@@ -104,7 +92,7 @@ Notice that it is also possible to write expressions like:
 
 where the expression stands for three atoms in a list.
 
-## 5. conclusion
+## 4. conclusion
 
 We defined *Sexpression* code format and introduced somewhat peculiar way to treat strings and comments. We tried to be consistent with these add-ons to keep acceptable ratio between simplicity and usability. The resulting code format is a bit more complicated than it is in usual Lispy languages, but we hope that the introduced complexity is justified by the data readability expressed this way.
 
