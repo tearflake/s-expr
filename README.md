@@ -1,6 +1,6 @@
 # s-expr v2.0.0
 
-S-expression is a formal language for representing data and code. *Sexpression* project is an implementation of S-expression language parser.
+S-expr is a formal language for representing data and code. *S-expr* project is an implementation of S-expression language parser.
 
 ## project specifics
 
@@ -12,29 +12,29 @@ s-expr usage examples
                   ///
 
 (
-  atom
-
-  (
-    /this is a comment/                                    ///
-    this is a list                                         this is a   
-    (                                                      multi-line
-      /one more comment/ one more list /also a comment/    comment
-    )                                                             ///   
-  )
-  
-  "this is an unicode string \u2717 \u2714"
-  
-  """      
-  this is a
-  multi-line
-  string
-         """
-  
-  (atom1 """    atom2)
-         middle
-         block
-         string
-            """
+    atom
+    
+    (
+        /this is a comment/                                      ///
+        this is a list                                           this is a   
+        (                                                        multi-line
+            /one more comment/ one more list /also a comment/    comment
+        )                                                               ///   
+    )
+    
+    "this is an unicode string \u2717 \u2714"
+    
+    """      
+    this is a
+    multi-line
+    string
+           """
+    
+    (atom1 """    atom2)
+           middle
+           block
+           string
+              """
 )
 ```
 
@@ -45,7 +45,7 @@ s-expr usage examples
 
 ## javascript API access
 
-*Sexpression* may bring its functionality through javascript API, both in Node.js and browser.
+*S-expr* may bring its functionality through javascript API, both in Node.js and browser.
 
 To access the API from Node.js, install it by: `npm install git+ssh://github.com/tearflake/s-expr`, and include the following line in your code:
 
