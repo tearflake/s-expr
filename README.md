@@ -41,7 +41,7 @@ sexpression usage examples
 ## resources
 
 - Test this package in the [online playground](https://tearflake.github.io/s-expr/playground/).
-- Read the [Sexpression specification](https://tearflake.github.io/sexpression/docs/s-expr).
+- Read the [S-expr specification](https://tearflake.github.io/s-expr/docs/s-expr).
 
 ## javascript API access
 
