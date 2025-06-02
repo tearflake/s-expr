@@ -8,4 +8,7 @@
     - unicode strings and multiline strings
 
 - v1.0.x
-    - comments consistent with strings
+    - peculiar style comments
+
+- v2.0.x
+    - even more peculiar style comments and strings

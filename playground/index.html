@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<title>S-expression playground</title>
+<title>Sexpression playground</title>
 
 <link rel="icon" type="image/png" href="">
 <script src="edit.js"></script>
@@ -129,7 +129,7 @@
 <tbody>
 <tr>
 <td class="exRound" id="top" cellpadding="10" align="center" valign="middle" height="30">
-<font style="font-size:24px"><strong>S-expression playground</strong></font>
+<font style="font-size:24px"><strong>Sexpression playground</strong></font>
 </td>
 </tr>
 <tr>
@@ -146,7 +146,7 @@
              <td class="exRound" id="top" valign="middle" height="28" width="100%" style="color:rgb(48,48,48); background-color:rgb(208,208,208);">
                 <font style="font-size:14px">
                 <b>
-                  s-expression input: &nbsp;&nbsp;
+                  sexpression input: &nbsp;&nbsp;
                 </b>
                 </font>
              </td>
@@ -227,7 +227,16 @@
         <td align="right">
             <font style="font-size:24px">
                 <b class="button">
-                <a id="bck2" href="https://github.com/tearflake" target="new" style="text-decoration: none;">
+                <a id="bck2" href="https://tearflake.github.io/s-expr/docs/s-expr" target="new" style="text-decoration: none; 20px; margin-right: 10px;">
+                <span style="padding-left: 20px; padding-right: 20px;">
+                read the specification
+                </span>
+                </a>
+                </b>
+            </font>
+            <font style="font-size:24px">
+                <b class="button">
+                <a id="bck2" href="https://github.com/tearflake/s-expr" target="new" style="text-decoration: none;">
                 <span style="padding-left: 20px; padding-right: 20px;">
                 visit me on GitHub
                 </span>
@@ -298,31 +307,33 @@
         input1.setValue (
 `
 ///
-this is a
-multi-line
-comment
-///
+sexpression usage examples
+                       ///
 
 (
-    atom
-    
-    (
-        /this is a comment/
-        this is a list
-        (
-            /one more comment/ one more list /also a comment/
-        )
-    )
-    
-    "this is a unicode string \\u2717 \\u2714"
-    
-    (more atoms)
-    
-    """
-    this is a
-    multi-line
-    string
-    """
+  atom
+
+  (
+    /this is a comment/                                    ///
+    this is a list                                         this is a   
+    (                                                      multi-line
+      /one more comment/ one more list /also a comment/    comment
+    )                                                             ///   
+  )
+  
+  "this is a unicode string \\u2717 \\u2714"
+  
+  """      
+  this is a
+  multi-line
+  string
+         """
+  
+  (atom1 """    atom2)
+         middle
+         block
+         string
+            """
 )
 `
 );
@@ -355,7 +366,6 @@ comment
                 var sparsed = (Date.now () - tm)
                 document.getElementById("tm").innerHTML = "(s-expression parsed in " + sparsed + "ms)";
                 //output = Sexpression.denormalizeSexpr (Sexpression.normalizeSexpr (output));
-                //output1.value = Sexpression.stringify (output);
                 output1.value = JSON.stringify (output, undefined, 4);
             }
             output1.selectionStart = 0;

@@ -1,5 +1,5 @@
-// sexpression.js
-// (c) tearflake, 2024
+// s-expr.js
+// (c) tearflake, 2025
 // MIT License
 
 "use strict"
@@ -29,27 +29,68 @@ var Sexpr = (
         err[7] = "Unresolved block error";
         err[8] = "Expected whitespace error";
         err[9] = "Expected newline error";
-        err[10] = "incorrect escaping error";
+        err[10] = "Incorrect escaping error";
+        err[11] = "Can not use reserved character '*'";
         
         var parse = function (text) {
             var m = createMatrix (text);
-            var p = parseMatrix (m);
+            var p = parseMatrix ([], m.l, m.m);
             return p;
         }
         
         var createMatrix = function (text) {
-            var m, i;
+            var l, m, i;
             
+            l = [];
             text = text.replaceAll ("\r\n", "\n").replaceAll ("\t", "    ").replaceAll ("\u000B", "");
             m = text.split ("\n");
             for (i = 0; i < m.length; i++) {
+                l[i] = m[i].length;
                 m[i] = m[i].split ("");
             }
             
-            return m;
+            return {l: l, m: m};
         }
         
-        var parseMatrix = function (m, verbose) {
+        var fixPos = function (pos, m) {
+            return pos;
+            /*
+            var y = 0;
+            var x = 1;
+            pos = [pos.y, pos.x];
+            var line = ""
+            for (var i = 0; i < m[pos[y]].length; i++) {
+                line += m[pos[y]][i];
+            }
+            
+            var dist = 0;
+            for (var i = 0; i < pos[x]; i++) {
+                if (line.substr (i, 5) === '&and;') {
+                    dist += 2;
+                    i += 4;
+                }
+                else if (line.substr (i, 4) === '&or;') {
+                    dist += 2;
+                    i += 3;
+                }
+                else if (line.substr (i, 4) === '&sl;') {
+                    dist += 1;
+                    i += 3;
+                }
+                else if (line.substr (i, 4) === '&bs;') {
+                    dist += 1;
+                    i += 3;
+                }
+                else {
+                    dist += 1;
+                }
+            }
+            
+            return {y: pos[y], x: dist};
+            */
+        }
+        
+        var parseMatrix = function (b, l, m, verbose) {
             var x, y, pos, i, tmpPos, stack, currChar, currAtom, val;
             
             y = 0;
@@ -57,11 +98,16 @@ var Sexpr = (
             pos = [0, 0];
             stack = [];
             while (pos[y] < m.length) {
+                while (b[0] && b[0][2] < pos[y]) {
+                    b.shift ();
+                }
+
+                pos[x] = skipExistingBlock (b, pos[y], pos[x]);
                 currChar = m[pos[y]][pos[x]];
                 if (currChar === '/' || currChar === ' ' || currChar === undefined) {
-                    tmpPos = skipWhitespace (m, pos[y], pos[x]);
+                    tmpPos = skipWhitespace (l, m, b, pos[y], pos[x]);
                     if (tmpPos.err) {
-                        return tmpPos;
+                        return {err: tmpPos.err, pos: fixPos (tmpPos.pos, m)};
                     }
                     
                     if (m[tmpPos[y]] === undefined) {
@@ -71,7 +117,7 @@ var Sexpr = (
                             tmpPos[x]++;
                         }
                         
-                        return {err: err[3], pos: {y: tmpPos[y], x: tmpPos[x]}};
+                        return {err: err[3], pos: fixPos ({y: tmpPos[y], x: tmpPos[x]}, m)};
                     }
                     
                     pos = tmpPos;
@@ -117,13 +163,14 @@ var Sexpr = (
                     }
                     
                     if (currChar === '"') {
-                        currAtom = getBlock (m, pos, currChar);
+                        currAtom = getBlock (b, l, m, pos, currChar);
                         if (currAtom.err) {
-                            return currAtom;
+                            return {err: currAtom.err, pos: fixPos (currAtom.pos, m)};
                         }
                         else {
-                            pos[y] = currAtom.pos[y];
-                            pos[x] = currAtom.pos[x];
+                            b.push (currAtom.rect);
+                            pos[y] = currAtom.rect[0];
+                            pos[x] = currAtom.rect[3];
                             currChar = m[pos[y]][pos[x]];
                             var end = {y: pos[y], x: pos[x]};
                             if (currAtom.val === "") {
@@ -132,7 +179,7 @@ var Sexpr = (
                             
                             if (escaped.length > 0) {
                                 if (currChar === '\\') {
-                                    return {err: err[10], pos: start};
+                                    return {err: err[10], pos: fixPos (start, m)};
                                 }
                                 else {
                                     currAtom = escaped + currAtom.val;
@@ -151,14 +198,23 @@ var Sexpr = (
                     }
                     else {
                         currAtom = escaped;
-                        while (' /()"'.indexOf (currChar) === -1 && currChar !== undefined) {
+                        br1: while (' /()"'.indexOf (currChar) === -1 && currChar !== undefined) {
+                            if (currChar === '*') {
+                                return {err: err[11], pos: fixPos ({y: pos[y], x: pos[x]}, m)};
+                            }
                             currAtom += currChar;
                             pos[x]++;
                             currChar = m[pos[y]][pos[x]];
+                            
+                            for (i = 0; i < b.length; i++) {
+                                if (pos[y] >= b[i][0] && pos[x] >= b[i][1] && pos[y] <= b[i][2] && pos[x] <= b[i][3]) {
+                                    break br1;
+                                }
+                            }
                         }
                         
                         if (currAtom.charAt (0) === "\\" && currAtom.charAt (currAtom.length - 1) === "\\") {
-                            return {err: err[10], pos: start};
+                            return {err: err[10], pos: fixPos (start, m)};
                         }
                     }
 
@@ -182,41 +238,44 @@ var Sexpr = (
                 }
             }
             
-            pos = skipWhitespace (m, pos[y], pos[x]);
+            pos = skipWhitespace (l, m, b, pos[y], pos[x]);
             if (pos.err) {
-                return pos;
+                return {err: pos.err, pos: fixPos (pos.pos, m)};
             }
             
             if (pos[y] < m.length && m[pos[y]][pos[x]] !== undefined) {
-                return {err: err[2], pos: {y: pos[y], x: pos[x]}};
+                return {err: err[2], pos: fixPos ({y: pos[y], x: pos[x]}, m)};
             }
             else {
                 return val;
             }
         }
         
-        var skipWhitespace = function (m, row, col) {
+        var skipWhitespace = function (l, m, b, row, col) {
             var pos, x, y, i, j, k, currAtom;
             
             y = 0;
             x = 1;
             pos = [row, col];
             while (pos[y] < m.length) {
+                pos[x] = skipExistingBlock (b, pos[y], pos[x]);
                 while (m[pos[y]][pos[x]] === " ") {
                     pos[x]++;
+                    pos[x] = skipExistingBlock (b, pos[y], pos[x]);
                     if (m[pos[y]][pos[x]] === undefined) {
                         break;
                     }
                 }
                 
                 if (m[pos[y]][pos[x]] === '/') {
-                    currAtom = getBlock (m, pos, '/');
+                    currAtom = getBlock (b, l, m, pos, '/');
                     if (currAtom.err) {
                         return currAtom;
                     }
                     else {
-                        pos[y] = currAtom.pos[y];
-                        pos[x] = currAtom.pos[x];
+                        b.push (currAtom.rect);
+                        pos[y] = currAtom.rect[0];
+                        pos[x] = currAtom.rect[3];
                     }
                 }
                 else if (m[pos[y]][pos[x]] !== undefined) {
@@ -231,7 +290,7 @@ var Sexpr = (
             return [pos[y], pos[x]];
         }
         
-        var getBlock = function (m, pos, bound) {
+        var getBlock = function (b, l, m, pos, bound) {
             var i, j, ws, numBounds1 = 0, numBounds2, x = 1, y = 0, currAtom = "", val;
             var pos0 = [pos[y], pos[x]];
             var pos1 = [pos[y], pos[x]];
@@ -273,58 +332,49 @@ var Sexpr = (
                             val = currAtom;
                         }
                         
-                        return {pos: [pos1[y], pos1[x] + 1], val: val};
+                        return {rect: [pos0[y], pos0[x], pos1[y], pos1[x] + 1], val: val};
                     }
                     else {
                         return {err: err[5], pos: {y: pos0[y], x: pos0[x]}};
                     }
                 }
                 else {
-                    i = pos1[x] + numBounds1;
-                    while (true) {
-                        if (m[pos1[y]][i] === undefined) {
-                            break;
-                        }
-                        else if (m[pos1[y]][i] !== " ") {
-                            return {err: err[9], pos: {y: pos[y], x: i}};
-                        }
-
-                        i++;
-                    }
-                    
-                    ws = 0;
-                    while (m[pos1[y]][ws] === " ") {
-                        ws++;
-                    }
-                    
                     pos1[y]++;
-                    pos1[x] = ws;
-                    while (pos1[y] < m.length) {
-                        for (i = 0; i < ws; i++) {
-                            if (m[pos1[y]][i] !== " " && m[pos1[y]][i] !== undefined) {
-                                //return {err: err[8], pos: {y: pos1[y], x: i}};
-                                return {err: err[6], pos: {y: pos0[y], x: pos0[x]}};
+                    br1: while (pos1[y] < m.length) {
+                        while (m[pos1[y]][pos1[x]] !== " " && m[pos1[y]][pos1[x]] !== bound) {
+                            pos1[y]++;
+                            if (pos1[y] >= m.length) {
+                                break br1;
                             }
                         }
                         
-                        if (m[pos1[y]][ws] === bound) {
-                            i = ws;
-                            numBounds2 = 0;
-                            while (m[pos1[y]][i] === bound) {
-                                i++;
-                                numBounds2++;
-                            }
-                            
-                            if (numBounds1 === numBounds2) {
-                                break;
-                            }
+                        while (m[pos1[y]][pos1[x]] === " ") {
+                            pos1[x]++;
+                        }
+                        
+                        i = pos1[x];
+                        numBounds2 = 0;
+                        while (m[pos1[y]][i] === bound) {
+                            i++;
+                            numBounds2++;
+                        }
+                        
+                        if (numBounds1 === numBounds2) {
+                            pos1[x] += numBounds2;
+                            break;
                         }
                         
                         pos1[y]++;
+                        pos1[x] = pos[x];
                     }
                     
                     if (pos1[y] < m.length) {
-                        return {pos: [pos1[y], pos1[x] + numBounds2], val: extractBlock (m, {begin: [pos0[y], ws], end: [pos1[y], ws + numBounds2]}).replaceAll ("\\", "&bsol;")};
+                        for (i = pos0[x] + numBounds1; i < pos1[x]; i++) {
+                            if (m[pos0[y]][i] !== " " && m[pos0[y]][i] !== undefined) {
+                                return {err: err[8], pos: {y: pos0[y], x: i}};
+                            }
+                        }
+                        return {rect: [pos0[y], pos0[x], pos1[y], pos1[x]], val: extractBlock (b, m, [pos0[y] + 1, pos0[x], pos1[y] - 1, pos1[x]]).replaceAll ("\\", "&bsol;")};
                     }
                     else {
                         return {err: err[6], pos: {y: pos[y], x: pos[x]}};
@@ -333,6 +383,43 @@ var Sexpr = (
             }
         }
         
+        var extractBlock = function (b, m, rect) {
+            var x = 1, y = 0, currChar, val = "";
+            var pos = [rect[0], rect[1]];
+            while (pos[y] <= rect[2]) {
+                //pos[x] = skipExistingBlock (b, pos[y], pos[x]);
+                currChar = m[pos[y]][pos[x]]
+                if (currChar !== undefined) {
+                    val += currChar;
+                }
+                
+                pos[x]++;
+                
+                if (pos[x] === rect[3] || m[pos[y]][pos[x]] === undefined) {
+                    val += "\n";
+                    pos[x] = rect[1];
+                    pos[y]++;
+                }
+            }
+            
+            return val;
+        }
+        
+        var skipExistingBlock = function (b, i, j) {
+            var k, x, y, pos;
+            x = 1;
+            y = 0;
+            pos = [i, j];
+            for (k = 0; k < b.length; k++) {
+                if (pos[y] >= b[k][0] && pos[x] >= b[k][1] && pos[y] <= b[k][2] && pos[x] <= b[k][3]) {
+                    pos[x] = Math.max (b[k][3], pos[x]);
+                }
+            }
+            
+            return pos[x];
+        }
+        
+        /*
         var extractBlock = function (m, bounds) {
             var i, j, x = 1, y = 0, currChar, val = "";
             var pos = bounds.begin;
@@ -346,16 +433,19 @@ var Sexpr = (
             
             return val;
         }
+        */
         
         var getNode = function (text, path) {
+            text = text.replaceAll ('&amp;', '&').replaceAll ('&sl;', '/'). replaceAll ('&bs;', '\\');
             var x = 1, y = 0;
             if (path.length === 0) {
                 var m = createMatrix(text);
-                var pos = skipWhitespace(m, 0, 0);
+                var pos = skipWhitespace(m.l, m.m, [], 0, 0);
                 return {err: "Top node error", pos: {y: pos[y], x: pos[x]}};
             }
             else {
-                var expr = parseMatrix (createMatrix(text), true);
+                var m = createMatrix(text);
+                var expr = parseMatrix ([], m.l, m.m, true);
                 while (path.length > 0) {
                     if (Array.isArray (expr.val)) {
                         if (expr.val[path[0]] !== undefined) {
@@ -363,15 +453,15 @@ var Sexpr = (
                             path.shift ();
                         }
                         else {
-                            return {err: "syntax error", found: "missing list element(s)", pos: expr.pos};
+                            return {err: "Syntax error", found: "missing list element(s)", pos: expr.pos};
                         }
                     }
                     else {
-                        return {err: "syntax error", found: "atom", pos: expr.pos};
+                        return {err: "Syntax error", found: "atom", pos: expr.pos};
                     }
                 }
                 
-                return {err: "syntax error", found: Array.isArray (expr.val) ? (expr.val.length === 0 ? "empty " : "") + "list" : JSON.stringify (expr.val), pos: expr.pos};
+                return {err: "Syntax error", found: Array.isArray (expr.val) ? (expr.val.length === 0 ? "empty " : "") + "list" : quoteIfNecessary (expr.val), pos: expr.pos};
             }
         };
         
@@ -525,13 +615,14 @@ var Sexpr = (
                 }
             }
 
+            //return output.replaceAll ('&and;', '/\\').replaceAll('&or;', '\\/').replaceAll ('&sl;', '/'). replaceAll ('&bs;', '\\');
             return output;
         }
 
         function quoteIfNecessary (str) {
             var quoted = false;
             for (var i = 0; i < str.length; i++) {
-                if ('/() \t\n\r'.indexOf (str.charAt (i)) > -1) {
+                if (str === "" || '/() \t\n\r'.indexOf (str.charAt (i)) > -1) {
                     quoted = true;
                     break;
                 }
@@ -567,7 +658,7 @@ var isNode = new Function ("try {return this===global;}catch(e){return false;}")
 if (isNode ()) {
     // begin of Node.js support
 
-    module.exports = Sexpression;
+    module.exports = Sexpr;
     
     function escapeRegExp(string) {
       return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
