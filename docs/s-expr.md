@@ -1,7 +1,7 @@
-# sexpression
+# s-expr
 
 > **[about document]**  
-> *Sexpression* specification document
+> *S-expr* specification document
 >
 > **[intended audience]**  
 > beginners in programming
