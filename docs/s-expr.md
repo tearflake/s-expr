@@ -35,25 +35,20 @@ This S-expression depicts equality between multiplication and square.
 
 ## 3. formal definition
 
-In computer science, syntax of a language is a set of acceptable expressions defined by a grammar. We bring the syntax of *Sexpression* in a relaxed kind of Backus-Naur form syntax rules:
+S-expressions (Symbolic Expressions) are a fundamental concept in computer science and programming language theory. S-expressions are a simple, yet powerful notation for representing nested list data structures and code in a parenthesized form. They are commonly associated with the Lisp family of programming languages, where they serve both as a way to represent code and data uniformly.
 
-```
-         <start> := <whitespace>* <element> <whitespace>*
+The general form of an S-expression is either:
 
-       <element> := <ATOM>
-                  | "(" <list> ")"
+- An atom (e.g., `atom`), or
+- A list of S-expressions (e.g., `(expr1 expr2 expr3 ...)`).
 
-          <list> := (<whitespace>* <element>)* <whitespace>*
+Lists can be nested, allowing for the representation of complex hierarchical structures.
 
-    <whitespace> := <SPACE>
-                  | <NEW-LINE>
-```
-
-The above grammar defines the syntax of *Sexpression*. To interpret these grammar rules, we use special symbols: `... := ...` for expressing assignment, `<...>` for noting identifiers, `"..."` for terminals, `(...)` for grouping, `...+` for one or more occurrences, `...*` for zero or more occurrences, `...?` for optional appearance, and `... | ...` for alternation between expressions.
+The whitespace between syntactic elements may be used to improve readability, and may be consisted of spaces, new lines, or any combination of them.
 
 ## 4. strings and comments
 
-Although a great part of S-expressions power lies in its simplicity, let's introduce a few extensions in a hope of making expressed code more readable, namely: strings and comments.
+Although a great part of S-expressions power lies in its simplicity, let's introduce a few syntax extensions in a hope of making expressed code more readable, namely: strings and comments.
 
 #### strings
 
@@ -67,7 +62,7 @@ string
        """
 ```
 
-Enclosing between a pair of `"""` symbols, multi-line strings are bound in a rectangle between the start of the first `"""` symbol, and the end of the second `"""` symbol. We have to make sure that there are only space characters to the right of the first `"""` symbol and to the left of the second `"""` symbol. Remember to be careful when modifying contents of multi-line strings to make sure that the end of the second `"""` symbol is always placed horizontally behind the longest line in the string.
+Enclosing between a pair of `"""` symbols, multi-line strings are bound in a rectangle enclosed between the start of the first `"""` symbol, and the end of the second `"""` symbol. We have to make sure that there are only space characters to the right of the first `"""` symbol and to the left of the second `"""` symbol. Remember to be careful when modifying contents of multi-line strings to make sure that the end of the second `"""` symbol is always placed horizontally behind the longest line in the string.
 
 Notice that it is also possible to write expressions like:
 
