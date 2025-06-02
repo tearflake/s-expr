@@ -8,7 +8,7 @@ This package contains a version of S-expression parser written in Javascript. Be
 
 ```
 ///
-sexpression usage examples
+s-expr usage examples
                        ///
 
 (
